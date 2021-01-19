@@ -1,0 +1,990 @@
+I"�<p>[TOC]</p>
+<h1 id="概述">概述</h1>
+
+<h2 id="实现效果">实现效果</h2>
+<p><img src="https://app.yinxiang.com/FileSharing.action?hash=1/1c665e9544d0054692bf3302a23bfda9-1997785" alt="1c665e9544d0054692bf3302a23bfda9.gif" /></p>
+
+<h2 id="实现思路">实现思路</h2>
+
+<p>基本流程如下:
+<img src="https://app.yinxiang.com/FileSharing.action?hash=1/36831aff4b47f3acbfe032014ad6e23e-20869" alt="36831aff4b47f3acbfe032014ad6e23e.png" /></p>
+
+<p>代码地址 <a href="https://github.com/haiyang-zhao/SkinDemo">https://github.com/haiyang-zhao/SkinDemo</a></p>
+<h1 id="view收集">View收集</h1>
+
+<p>第一步要收集需要换肤的控件及其各个属性，从Activity的setContentView()说起</p>
+<h2 id="setcontentview">setContentView()</h2>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="nc">AppCompatActivity</span> <span class="o">{</span>
+    
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="no">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+    <span class="o">}</span>    
+
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>调用的父类AppCompatActivity的setContentView方法</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="rouge-code"><pre><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">setContentView</span><span class="o">(</span><span class="nd">@LayoutRes</span> <span class="kt">int</span> <span class="n">layoutResID</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">getDelegate</span><span class="o">().</span><span class="na">setContentView</span><span class="o">(</span><span class="n">layoutResID</span><span class="o">);</span>
+<span class="o">}</span>
+
+
+<span class="nd">@NonNull</span>
+<span class="kd">public</span> <span class="nc">AppCompatDelegate</span> <span class="nf">getDelegate</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mDelegate</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mDelegate</span> <span class="o">=</span> <span class="nc">AppCompatDelegate</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="k">this</span><span class="o">);</span><span class="c1">//返回的是AppCompatDelegateImpl</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">mDelegate</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>最终调用的是AppCompatDelegateImpl的setContentView方法</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="rouge-code"><pre><span class="c1">//AppCompatDelegateImpl.java</span>
+<span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">setContentView</span><span class="o">(</span><span class="kt">int</span> <span class="n">resId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">ensureSubDecor</span><span class="o">();</span> <span class="c1">// 1</span>
+    <span class="nc">ViewGroup</span> <span class="n">contentParent</span> <span class="o">=</span> <span class="n">mSubDecor</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">content</span><span class="o">);</span>
+    <span class="n">contentParent</span><span class="o">.</span><span class="na">removeAllViews</span><span class="o">();</span>
+    <span class="nc">LayoutInflater</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">mContext</span><span class="o">).</span><span class="na">inflate</span><span class="o">(</span><span class="n">resId</span><span class="o">,</span> <span class="n">contentParent</span><span class="o">);</span><span class="c1">//2</span>
+    <span class="n">mAppCompatWindowCallback</span><span class="o">.</span><span class="na">getWrapped</span><span class="o">().</span><span class="na">onContentChanged</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>ensureSubDecor()方法是确保DecorView中添加了subDecor 如下图所示</p>
+
+<p><img src="evernotecid://8A2485BE-7365-4851-A3F6-97FBC9BCC325/appyinxiangcom/23840206/ENResource/p1059" alt="751bf732e378b0fbddafd11e4dcf63e0.png" />@w=500
+然后再调用  LayoutInflater.from(mContext).inflate(resId, contentParent)向subDecor中添加我们自己定义在xml中的view。</p>
+
+<h2 id="layoutinflaterinflate">LayoutInflater.inflate()</h2>
+
+<p>LayoutInflater.inflate()最终会调用tryCreateView(),tryCreateView方法里调用mFactory2的onCreateView()创建View</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+</pre></td><td class="rouge-code"><pre><span class="c1">//LayoutInflater.java</span>
+<span class="kd">public</span> <span class="kd">final</span> <span class="nc">View</span> <span class="nf">tryCreateView</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="nc">View</span> <span class="n">parent</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">String</span> <span class="n">name</span><span class="o">,</span>
+    <span class="nd">@NonNull</span> <span class="nc">Context</span> <span class="n">context</span><span class="o">,</span>
+    <span class="nd">@NonNull</span> <span class="nc">AttributeSet</span> <span class="n">attrs</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">name</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="no">TAG_1995</span><span class="o">))</span> <span class="o">{</span>
+        <span class="c1">// Let's party like it's 1995!</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">BlinkLayout</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nc">View</span> <span class="n">view</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mFactory2</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">mFactory2</span><span class="o">.</span><span class="na">onCreateView</span><span class="o">(</span><span class="n">parent</span><span class="o">,</span> <span class="n">name</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">mFactory</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">mFactory</span><span class="o">.</span><span class="na">onCreateView</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">view</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">mPrivateFactory</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">mPrivateFactory</span><span class="o">.</span><span class="na">onCreateView</span><span class="o">(</span><span class="n">parent</span><span class="o">,</span> <span class="n">name</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="k">return</span> <span class="n">view</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="hook点mfactory2">Hook点mFactory2</h2>
+
+<p>可以通过LayoutInflater的setFactory2()方法，来设置自己的Factory2</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setFactory2</span><span class="o">(</span><span class="nc">Factory2</span> <span class="n">factory</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mFactorySet</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalStateException</span><span class="o">(</span><span class="s">"A factory has already been set on this LayoutInflater"</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">factory</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">(</span><span class="s">"Given factory can not be null"</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">mFactorySet</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mFactory</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mFactory</span> <span class="o">=</span> <span class="n">mFactory2</span> <span class="o">=</span> <span class="n">factory</span><span class="o">;</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">mFactory</span> <span class="o">=</span> <span class="n">mFactory2</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">FactoryMerger</span><span class="o">(</span><span class="n">factory</span><span class="o">,</span> <span class="n">factory</span><span class="o">,</span> <span class="n">mFactory</span><span class="o">,</span> <span class="n">mFactory2</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>我们只可以通过反射把mFactorySet设置为false，就可以设置mFactory2了</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre><span class="nd">@SystemService</span><span class="o">(</span><span class="nc">Context</span><span class="o">.</span><span class="na">LAYOUT_INFLATER_SERVICE</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">LayoutInflater</span> <span class="o">{</span>
+    <span class="nd">@UnsupportedAppUsage</span><span class="o">(</span><span class="n">maxTargetSdk</span> <span class="o">=</span> <span class="nc">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">P</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">mFactorySet</span><span class="o">;</span>
+    <span class="nd">@UnsupportedAppUsage</span>
+    <span class="kd">private</span> <span class="nc">Factory2</span> <span class="n">mFactory2</span><span class="o">;</span>
+    <span class="nd">@UnsupportedAppUsage</span>
+    <span class="kd">private</span> <span class="nc">Factory2</span> <span class="n">mPrivateFactory</span><span class="o">;</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>把LayoutInflater的mFactory2 Hook成自己定义的Factory2，并在其中完成view的采集工作。</p>
+
+<p><strong>但是</strong>， Android 10中把mFactory2标注为UnsupportedAppUsage，用户自己的app不能通过反射的方法去Hook了，</p>
+
+<p>这是使用<a href="https://github.com/tiann/FreeReflection">FreeReflection</a> 可以绕过此限制</p>
+
+<h2 id="skinlayoutinflaterfactory">SkinLayoutInflaterFactory</h2>
+
+<p>这里 SkinLayoutInflaterFactory还实现Observer，通过观察者默认，一定执行换肤操作，调用其update()，skinAttribute.applySkin()来换肤</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SkinLayoutInflaterFactory</span> <span class="kd">implements</span> <span class="nc">LayoutInflater</span><span class="o">.</span><span class="na">Factory2</span><span class="o">,</span> <span class="nc">Observer</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span><span class="o">[]</span> <span class="n">mClassPrefixList</span> <span class="o">=</span> <span class="o">{</span>
+            <span class="s">"android.widget."</span><span class="o">,</span>
+            <span class="s">"android.webkit."</span><span class="o">,</span>
+            <span class="s">"android.app."</span><span class="o">,</span>
+            <span class="s">"android.view."</span>
+    <span class="o">};</span>
+
+
+    <span class="c1">//记录对应View的构造函数</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Constructor</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">View</span><span class="o">&gt;&gt;</span> <span class="n">mConstructorMap</span> <span class="o">=</span>
+            <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Constructor</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">View</span><span class="o">&gt;&gt;();</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">mConstructorSignature</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[]{</span>
+            <span class="nc">Context</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="nc">AttributeSet</span><span class="o">.</span><span class="na">class</span><span class="o">};</span>
+
+    <span class="c1">// 当选择新皮肤后需要替换View与之对应的属性</span>
+    <span class="c1">// 页面属性管理器</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">SkinAttribute</span> <span class="n">skinAttribute</span><span class="o">;</span>
+
+    <span class="c1">// 用于获取窗口的状态框的信息</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Activity</span> <span class="n">activity</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">SkinLayoutInflaterFactory</span><span class="o">(</span><span class="nc">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">activity</span> <span class="o">=</span> <span class="n">activity</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">skinAttribute</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SkinAttribute</span><span class="o">();</span>
+    <span class="o">}</span>
+
+
+    <span class="nd">@Nullable</span>
+    <span class="nd">@Override</span>
+
+    <span class="kd">public</span> <span class="nc">View</span> <span class="nf">onCreateView</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="nc">View</span> <span class="n">parent</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">AttributeSet</span> <span class="n">attrs</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="c1">//换肤就是在需要时候替换 View的属性(src、background等)</span>
+        <span class="c1">//所以这里创建 View,从而修改View属性</span>
+        <span class="nc">View</span> <span class="n">view</span> <span class="o">=</span> <span class="n">createSDKView</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="kc">null</span> <span class="o">==</span> <span class="n">view</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">view</span> <span class="o">=</span> <span class="n">createView</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="c1">//这就是我们加入的逻辑</span>
+        <span class="k">if</span> <span class="o">(</span><span class="kc">null</span> <span class="o">!=</span> <span class="n">view</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">//加载属性</span>
+            <span class="n">skinAttribute</span><span class="o">.</span><span class="na">lookup</span><span class="o">(</span><span class="n">view</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">view</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">View</span> <span class="nf">createSDKView</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">AttributeSet</span>
+            <span class="n">attrs</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//如果包含 . 则不是SDK中的view 可能是自定义view包括support库中的View</span>
+        <span class="k">if</span> <span class="o">(-</span><span class="mi">1</span> <span class="o">!=</span> <span class="n">name</span><span class="o">.</span><span class="na">indexOf</span><span class="o">(</span><span class="sc">'.'</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="c1">//不包含就要在解析的 节点 name前，拼上： android.widget. 等尝试去反射</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">String</span> <span class="n">s</span> <span class="o">:</span> <span class="n">mClassPrefixList</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">View</span> <span class="n">view</span> <span class="o">=</span> <span class="n">createView</span><span class="o">(</span><span class="n">s</span> <span class="o">+</span> <span class="n">name</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">view</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">view</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">View</span> <span class="nf">createView</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">AttributeSet</span>
+            <span class="n">attrs</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Constructor</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">View</span><span class="o">&gt;</span> <span class="n">constructor</span> <span class="o">=</span> <span class="n">findConstructor</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">constructor</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">attrs</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+
+    <span class="kd">private</span> <span class="nc">Constructor</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">View</span><span class="o">&gt;</span> <span class="nf">findConstructor</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Constructor</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">View</span><span class="o">&gt;</span> <span class="n">constructor</span> <span class="o">=</span> <span class="n">mConstructorMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">constructor</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="nc">Class</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">View</span><span class="o">&gt;</span> <span class="n">clazz</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">().</span><span class="na">loadClass</span>
+                        <span class="o">(</span><span class="n">name</span><span class="o">).</span><span class="na">asSubclass</span><span class="o">(</span><span class="nc">View</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+                <span class="n">constructor</span> <span class="o">=</span> <span class="n">clazz</span><span class="o">.</span><span class="na">getConstructor</span><span class="o">(</span><span class="n">mConstructorSignature</span><span class="o">);</span>
+                <span class="n">mConstructorMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">constructor</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">constructor</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Nullable</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">View</span> <span class="nf">onCreateView</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">AttributeSet</span> <span class="n">attrs</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">update</span><span class="o">(</span><span class="nc">Observable</span> <span class="n">o</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">SkinThemeUtils</span><span class="o">.</span><span class="na">updateStatusBarColor</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+        <span class="n">skinAttribute</span><span class="o">.</span><span class="na">applySkin</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="何时setfactory2">何时setFactory2()</h2>
+<p>再看看MainActivity的onCreate()方法</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre>    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="no">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>我们必须在调用setContentView()之前，super.onCreate()之后去设置值，，为什么要在super.onCreate()之后设呢？</p>
+
+<p>看看 super.onCreate()，即就是AppCompatActivity的onCreate()方法</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td><td class="rouge-code"><pre><span class="c1">//AppCompatActivity.java</span>
+<span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">AppCompatDelegate</span> <span class="n">delegate</span> <span class="o">=</span> <span class="n">getDelegate</span><span class="o">();</span>
+    <span class="n">delegate</span><span class="o">.</span><span class="na">installViewFactory</span><span class="o">();</span><span class="c1">//设置setFactory2</span>
+    <span class="n">delegate</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span><span class="c1">//3</span>
+<span class="o">}</span>
+
+<span class="c1">//AppCompatDelegateImpl.java</span>
+<span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">installViewFactory</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">LayoutInflater</span> <span class="n">layoutInflater</span> <span class="o">=</span> <span class="nc">LayoutInflater</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">mContext</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">layoutInflater</span><span class="o">.</span><span class="na">getFactory</span><span class="o">()</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">LayoutInflaterCompat</span><span class="o">.</span><span class="na">setFactory2</span><span class="o">(</span><span class="n">layoutInflater</span><span class="o">,</span> <span class="k">this</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(!(</span><span class="n">layoutInflater</span><span class="o">.</span><span class="na">getFactory2</span><span class="o">()</span> <span class="k">instanceof</span> <span class="nc">AppCompatDelegateImpl</span><span class="o">))</span> <span class="o">{</span>
+            <span class="nc">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="no">TAG</span><span class="o">,</span> <span class="s">"The Activity's LayoutInflater already has a Factory installed"</span>
+                    <span class="o">+</span> <span class="s">" so we can not install AppCompat's"</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>AppCompatActivity的onCreate()中调用AppCompatDelegateImpl的installViewFactory()设置mFactory2的只，所以要保证自己setFactory2()是最后一次调用，否则程序就报错了，</p>
+
+<p>再看看super.onCreate(savedInstanceState)直到Activity的onCreate()方法中，</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+</pre></td><td class="rouge-code"><pre>   <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//....</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">savedInstanceState</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mAutoFillResetNeeded</span> <span class="o">=</span> <span class="n">savedInstanceState</span><span class="o">.</span><span class="na">getBoolean</span><span class="o">(</span><span class="no">AUTOFILL_RESET_NEEDED</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+            <span class="n">mLastAutofillId</span> <span class="o">=</span> <span class="n">savedInstanceState</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="no">LAST_AUTOFILL_ID</span><span class="o">,</span>
+                    <span class="nc">View</span><span class="o">.</span><span class="na">LAST_APP_AUTOFILL_ID</span><span class="o">);</span>
+
+            <span class="k">if</span> <span class="o">(</span><span class="n">mAutoFillResetNeeded</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">getAutofillManager</span><span class="o">().</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+            <span class="o">}</span>
+
+            <span class="nc">Parcelable</span> <span class="n">p</span> <span class="o">=</span> <span class="n">savedInstanceState</span><span class="o">.</span><span class="na">getParcelable</span><span class="o">(</span><span class="no">FRAGMENTS_TAG</span><span class="o">);</span>
+            <span class="n">mFragments</span><span class="o">.</span><span class="na">restoreAllState</span><span class="o">(</span><span class="n">p</span><span class="o">,</span> <span class="n">mLastNonConfigurationInstances</span> <span class="o">!=</span> <span class="kc">null</span>
+                    <span class="o">?</span> <span class="n">mLastNonConfigurationInstances</span><span class="o">.</span><span class="na">fragments</span> <span class="o">:</span> <span class="kc">null</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">mFragments</span><span class="o">.</span><span class="na">dispatchCreate</span><span class="o">();</span>
+        <span class="n">dispatchActivityCreated</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span><span class="c1">//</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mVoiceInteractor</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mVoiceInteractor</span><span class="o">.</span><span class="na">attachActivity</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">mRestoredFromBundle</span> <span class="o">=</span> <span class="n">savedInstanceState</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="n">mCalled</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+
+    <span class="o">}</span>
+    
+    
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">dispatchActivityCreated</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">getApplication</span><span class="o">().</span><span class="na">dispatchActivityCreated</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">savedInstanceState</span><span class="o">);</span>
+    <span class="nc">Object</span><span class="o">[]</span> <span class="n">callbacks</span> <span class="o">=</span> <span class="n">collectActivityLifecycleCallbacks</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">callbacks</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">callbacks</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="o">((</span><span class="nc">Application</span><span class="o">.</span><span class="na">ActivityLifecycleCallbacks</span><span class="o">)</span> <span class="n">callbacks</span><span class="o">[</span><span class="n">i</span><span class="o">]).</span><span class="na">onActivityCreated</span><span class="o">(</span><span class="k">this</span><span class="o">,</span>
+                    <span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>dispatchActivityCreated()回调了onActivityCreated()接口</p>
+
+<p>因此可以调用Application.registerActivityLifecycleCallbacks()注册Acitity声明周期方法，在其onActivityCreated()中设置mFactory2的值</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+</pre></td><td class="rouge-code"><pre><span class="c1">//注册Activity生命周期的回调</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SkinActivityLifecycle</span> <span class="kd">implements</span> <span class="nc">Application</span><span class="o">.</span><span class="na">ActivityLifecycleCallbacks</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span> <span class="no">TAG</span> <span class="o">=</span> <span class="s">"SkinActivityLifecycle"</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">SkinManager</span> <span class="n">skinManager</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">SkinActivityLifecycle</span><span class="o">(</span><span class="nc">SkinManager</span> <span class="n">skinManager</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="k">this</span><span class="o">.</span><span class="na">skinManager</span> <span class="o">=</span> <span class="n">skinManager</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onActivityCreated</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="nc">Activity</span> <span class="n">activity</span><span class="o">,</span> <span class="nd">@Nullable</span> <span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="no">TAG</span><span class="o">,</span> <span class="n">activity</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">" onActivityCreated"</span><span class="o">);</span>
+
+
+        <span class="nc">SkinThemeUtils</span><span class="o">.</span><span class="na">updateStatusBarColor</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+        <span class="nc">LayoutInflater</span> <span class="n">layoutInflater</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="na">getLayoutInflater</span><span class="o">();</span>
+
+        <span class="c1">//利用反射将layoutInflater的私有变量mFactorySet设置为true</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">Field</span> <span class="n">field</span> <span class="o">=</span> <span class="nc">LayoutInflater</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">"mFactorySet"</span><span class="o">);</span>
+            <span class="n">field</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+            <span class="n">field</span><span class="o">.</span><span class="na">setBoolean</span><span class="o">(</span><span class="n">layoutInflater</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+
+        <span class="nc">SkinLayoutInflaterFactory</span> <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SkinLayoutInflaterFactory</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+        <span class="n">layoutInflater</span><span class="o">.</span><span class="na">setFactory2</span><span class="o">(</span><span class="n">factory</span><span class="o">);</span>
+
+        <span class="k">this</span><span class="o">.</span><span class="na">skinManager</span><span class="o">.</span><span class="na">addObserver</span><span class="o">(</span><span class="n">factory</span><span class="o">);</span>
+
+    <span class="o">}</span>
+    <span class="c1">//.....</span>
+       <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onActivityDestroyed</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="nc">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">activity</span><span class="o">.</span><span class="na">unregisterActivityLifecycleCallbacks</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>SkinManager的构造方法中去初始化</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">SkinManager</span> <span class="kd">extends</span> <span class="nc">Observable</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">volatile</span> <span class="kd">static</span> <span class="nc">SkinManager</span> <span class="no">INSTANCE</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Application</span> <span class="n">app</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">SkinActivityLifecycle</span> <span class="n">skinActivityLifecycle</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nf">SkinManager</span><span class="o">(</span><span class="nc">Application</span> <span class="n">app</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">app</span> <span class="o">=</span> <span class="n">app</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">skinActivityLifecycle</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SkinActivityLifecycle</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="nc">SkinPrefs</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">app</span><span class="o">);</span>
+        <span class="nc">SkinResources</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">app</span><span class="o">);</span>
+        <span class="n">app</span><span class="o">.</span><span class="na">registerActivityLifecycleCallbacks</span><span class="o">(</span><span class="n">skinActivityLifecycle</span><span class="o">);</span>
+
+
+    <span class="o">}</span>
+    <span class="c1">//...</span>
+<span class="o">}</span>    
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="获取皮肤包中对应的resource">获取皮肤包中对应的resource</h1>
+
+<h2 id="关键apiresourcesgetidentifier">关键API：Resources.getIdentifier()</h2>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+</pre></td><td class="rouge-code"><pre><span class="cm">/**
+ * Return a resource identifier for the given resource name.  A fully
+ * qualified resource name is of the form "package:type/entry".  The first
+ * two components (package and type) are optional if defType and
+ * defPackage, respectively, are specified here.
+ * 
+ * &lt;p&gt;Note: use of this function is discouraged.  It is much more
+ * efficient to retrieve resources by identifier than by name.
+ * 
+ * @param name The name of the desired resource.
+ * @param defType Optional default resource type to find, if "type/" is
+ *                not included in the name.  Can be null to require an
+ *                explicit type.
+ * @param defPackage Optional default package to find, if "package:" is
+ *                   not included in the name.  Can be null to require an
+ *                   explicit package.
+ * 
+ * @return int The associated resource identifier.  Returns 0 if no such
+ *         resource was found.  (0 is not a valid resource ID.)
+ */</span>
+<span class="kd">public</span> <span class="kt">int</span> <span class="nf">getIdentifier</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="nc">String</span> <span class="n">defType</span><span class="o">,</span> <span class="nc">String</span> <span class="n">defPackage</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">mResourcesImpl</span><span class="o">.</span><span class="na">getIdentifier</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">defType</span><span class="o">,</span> <span class="n">defPackage</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>获取R文件中的资源ID，</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="nt">&lt;color</span> <span class="na">name=</span><span class="s">"colorPrimary"</span><span class="nt">&gt;</span>#1F1F1F<span class="nt">&lt;/color&gt;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>name就是colorPrimary，defType是color，defPackage指定报包名，</p>
+
+<p>如果直接用宿主的Resources对象调用getIdentifier()包名传皮肤包的包名，肯定不能获取到resId，因此要创建包含皮肤包的Resources对象
+<img src="evernotecid://8A2485BE-7365-4851-A3F6-97FBC9BCC325/appyinxiangcom/23840206/ENResource/p1060" alt="20c404deb56c696159a6ba75cc8f0d6c.png" /></p>
+<h2 id="创建皮肤包resources对象">创建皮肤包Resources对象</h2>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre></td><td class="rouge-code"><pre><span class="c1">//宿主res</span>
+            <span class="nc">Resources</span> <span class="n">appResources</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="na">getResources</span><span class="o">();</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="c1">//反射创建assets对象</span>
+                <span class="nc">AssetManager</span> <span class="n">assetManager</span> <span class="o">=</span> <span class="nc">AssetManager</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">newInstance</span><span class="o">();</span>
+                <span class="c1">//反射获取addAssetPath方法</span>
+                <span class="nc">Method</span> <span class="n">method</span> <span class="o">=</span> <span class="nc">AssetManager</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"addAssetPath"</span><span class="o">,</span> <span class="nc">String</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+                <span class="n">method</span><span class="o">.</span><span class="na">invoke</span><span class="o">(</span><span class="n">assetManager</span><span class="o">,</span> <span class="n">path</span><span class="o">);</span>
+
+
+                <span class="c1">//根据当前的设备显示器信息 与 配置(横竖屏、语言等) 创建Resources</span>
+                <span class="nc">Resources</span> <span class="n">skinResource</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Resources</span><span class="o">(</span><span class="n">assetManager</span><span class="o">,</span> <span class="n">appResources</span><span class="o">.</span><span class="na">getDisplayMetrics</span>
+                        <span class="o">(),</span> <span class="n">appResources</span><span class="o">.</span><span class="na">getConfiguration</span><span class="o">());</span>
+
+                <span class="c1">//获取外部Apk(皮肤包) 包名</span>
+                <span class="nc">PackageManager</span> <span class="n">mPm</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="na">getPackageManager</span><span class="o">();</span>
+                <span class="nc">PackageInfo</span> <span class="n">info</span> <span class="o">=</span> <span class="n">mPm</span><span class="o">.</span><span class="na">getPackageArchiveInfo</span><span class="o">(</span><span class="n">path</span><span class="o">,</span> <span class="nc">PackageManager</span>
+                        <span class="o">.</span><span class="na">GET_ACTIVITIES</span><span class="o">);</span>
+                <span class="nc">String</span> <span class="n">packageName</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="na">packageName</span><span class="o">;</span>
+                <span class="nc">SkinResources</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">applySkin</span><span class="o">(</span><span class="n">skinResource</span><span class="o">,</span> <span class="n">packageName</span><span class="o">);</span>
+
+                <span class="c1">//记录</span>
+                <span class="nc">SkinPrefs</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">setSkin</span><span class="o">(</span><span class="n">path</span><span class="o">);</span>
+
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>这样就能通过name、type和皮肤包的包名，获取皮肤包中对应资源的Id来了</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getIdentifier</span><span class="o">(</span><span class="kt">int</span> <span class="n">resId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">isDefaultSkin</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">resId</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="nc">String</span> <span class="n">resName</span> <span class="o">=</span> <span class="n">mAppResources</span><span class="o">.</span><span class="na">getResourceEntryName</span><span class="o">(</span><span class="n">resId</span><span class="o">);</span>
+        <span class="nc">String</span> <span class="n">resType</span> <span class="o">=</span> <span class="n">mAppResources</span><span class="o">.</span><span class="na">getResourceTypeName</span><span class="o">(</span><span class="n">resId</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="n">mSkinResources</span><span class="o">.</span><span class="na">getIdentifier</span><span class="o">(</span><span class="n">resName</span><span class="o">,</span> <span class="n">resType</span><span class="o">,</span> <span class="n">mSkinPkgName</span><span class="o">);</span>
+    <span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="执行换肤">执行换肤</h1>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+</pre></td><td class="rouge-code"><pre>      <span class="c1">//切换皮肤</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">applySkin</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">applySkinSupport</span><span class="o">();</span>
+
+        <span class="k">for</span> <span class="o">(</span><span class="nc">SkinPair</span> <span class="n">skinPair</span> <span class="o">:</span> <span class="n">skinPairs</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Drawable</span> <span class="n">left</span> <span class="o">=</span> <span class="kc">null</span><span class="o">,</span> <span class="n">top</span> <span class="o">=</span> <span class="kc">null</span><span class="o">,</span> <span class="n">right</span> <span class="o">=</span> <span class="kc">null</span><span class="o">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="nc">String</span> <span class="n">attrName</span> <span class="o">=</span> <span class="n">skinPair</span><span class="o">.</span><span class="na">attrName</span><span class="o">;</span>
+            <span class="kt">int</span> <span class="n">resId</span> <span class="o">=</span> <span class="n">skinPair</span><span class="o">.</span><span class="na">resId</span><span class="o">;</span>
+            <span class="c1">//根据不同的属性设置不同的值</span>
+            <span class="k">switch</span> <span class="o">(</span><span class="n">attrName</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">case</span> <span class="s">"src"</span><span class="o">:</span>
+                    <span class="nc">Object</span> <span class="n">background</span> <span class="o">=</span> <span class="n">getInstance</span><span class="o">().</span><span class="na">getBackground</span><span class="o">(</span><span class="n">resId</span><span class="o">);</span>
+                    <span class="c1">//比如@color/xxx</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">background</span> <span class="k">instanceof</span> <span class="nc">Integer</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">view</span><span class="o">.</span><span class="na">setBackgroundColor</span><span class="o">((</span><span class="kt">int</span><span class="o">)</span> <span class="n">background</span><span class="o">);</span>
+                    <span class="o">}</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">background</span> <span class="k">instanceof</span> <span class="nc">Drawable</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="nc">ViewCompat</span><span class="o">.</span><span class="na">setBackground</span><span class="o">(</span><span class="n">view</span><span class="o">,</span> <span class="o">(</span><span class="nc">Drawable</span><span class="o">)</span> <span class="n">background</span><span class="o">);</span>
+                    <span class="o">}</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"background"</span><span class="o">:</span>
+                    <span class="n">background</span> <span class="o">=</span> <span class="n">getInstance</span><span class="o">().</span><span class="na">getBackground</span><span class="o">(</span><span class="n">skinPair</span>
+                            <span class="o">.</span><span class="na">resId</span><span class="o">);</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">background</span> <span class="k">instanceof</span> <span class="nc">Integer</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">view</span> <span class="k">instanceof</span> <span class="nc">ImageView</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="o">((</span><span class="nc">ImageView</span><span class="o">)</span> <span class="n">view</span><span class="o">).</span><span class="na">setImageDrawable</span><span class="o">(</span><span class="k">new</span> <span class="nc">ColorDrawable</span><span class="o">((</span><span class="nc">Integer</span><span class="o">)</span>
+                                    <span class="n">background</span><span class="o">));</span>
+                        <span class="o">}</span><span class="k">else</span> <span class="o">{</span>
+                            <span class="n">view</span><span class="o">.</span><span class="na">setBackgroundColor</span><span class="o">((</span><span class="nc">Integer</span><span class="o">)</span> <span class="n">background</span><span class="o">);</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+
+                    <span class="k">if</span> <span class="o">(</span><span class="n">background</span> <span class="k">instanceof</span> <span class="nc">Drawable</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">view</span> <span class="k">instanceof</span> <span class="nc">ImageView</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="o">((</span><span class="nc">ImageView</span><span class="o">)</span> <span class="n">view</span><span class="o">).</span><span class="na">setImageDrawable</span><span class="o">((</span><span class="nc">Drawable</span><span class="o">)</span> <span class="n">background</span><span class="o">);</span>
+                        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+
+                            <span class="n">view</span><span class="o">.</span><span class="na">setBackground</span><span class="o">((</span><span class="nc">Drawable</span><span class="o">)</span> <span class="n">background</span><span class="o">);</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"textColor"</span><span class="o">:</span>
+                    <span class="o">((</span><span class="nc">TextView</span><span class="o">)</span> <span class="n">view</span><span class="o">).</span><span class="na">setTextColor</span><span class="o">(</span><span class="n">getInstance</span><span class="o">().</span><span class="na">getColorStateList</span>
+                            <span class="o">(</span><span class="n">skinPair</span><span class="o">.</span><span class="na">resId</span><span class="o">));</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"drawableLeft"</span><span class="o">:</span>
+                    <span class="n">left</span> <span class="o">=</span> <span class="n">getInstance</span><span class="o">().</span><span class="na">getDrawable</span><span class="o">(</span><span class="n">skinPair</span><span class="o">.</span><span class="na">resId</span><span class="o">);</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"drawableTop"</span><span class="o">:</span>
+                    <span class="n">top</span> <span class="o">=</span> <span class="n">getInstance</span><span class="o">().</span><span class="na">getDrawable</span><span class="o">(</span><span class="n">skinPair</span><span class="o">.</span><span class="na">resId</span><span class="o">);</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"drawableRight"</span><span class="o">:</span>
+                    <span class="n">right</span> <span class="o">=</span> <span class="n">getInstance</span><span class="o">().</span><span class="na">getDrawable</span><span class="o">(</span><span class="n">skinPair</span><span class="o">.</span><span class="na">resId</span><span class="o">);</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"drawableBottom"</span><span class="o">:</span>
+                    <span class="n">bottom</span> <span class="o">=</span> <span class="n">getInstance</span><span class="o">().</span><span class="na">getDrawable</span><span class="o">(</span><span class="n">skinPair</span><span class="o">.</span><span class="na">resId</span><span class="o">);</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">default</span><span class="o">:</span>
+                    <span class="k">break</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="k">if</span> <span class="o">(</span><span class="kc">null</span> <span class="o">!=</span> <span class="n">left</span> <span class="o">||</span> <span class="kc">null</span> <span class="o">!=</span> <span class="n">right</span> <span class="o">||</span> <span class="kc">null</span> <span class="o">!=</span> <span class="n">top</span> <span class="o">||</span> <span class="kc">null</span> <span class="o">!=</span> <span class="n">bottom</span><span class="o">)</span> <span class="o">{</span>
+                <span class="o">((</span><span class="nc">TextView</span><span class="o">)</span> <span class="n">view</span><span class="o">).</span><span class="na">setCompoundDrawablesWithIntrinsicBounds</span><span class="o">(</span><span class="n">left</span><span class="o">,</span> <span class="n">top</span><span class="o">,</span> <span class="n">right</span><span class="o">,</span>
+                        <span class="n">bottom</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">//自定义view支持</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">applySkinSupport</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">view</span> <span class="k">instanceof</span> <span class="nc">SkinViewSupport</span><span class="o">)</span> <span class="o">{</span>
+            <span class="o">((</span><span class="nc">SkinViewSupport</span><span class="o">)</span> <span class="n">view</span><span class="o">).</span><span class="na">applySkin</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="参考资源">参考资源</h1>
+
+<p><a href="http://weishu.me/2018/06/07/free-reflection-above-android-p/">一种绕过Android P对非SDK接口限制的简单方法</a></p>
+
+<p><a href="http://weishu.me/2019/03/16/another-free-reflection-above-android-p/">另一种绕过 Android P以上非公开API限制的办法</a></p>
+
+<p><a href="https://gtoad.github.io/2018/07/06/Android-Native-Hook-Practice/">Android Native Hook工具实践</a></p>
+
+<p><a href="https://blog.islinjw.cn/2019/05/18/%E5%8F%AF%E8%83%BD%E6%98%AF%E5%85%A8%E7%BD%91%E8%AE%B2%E6%9C%80%E7%BB%86%E7%9A%84%E5%AE%89%E5%8D%93resources-arsc%E8%A7%A3%E6%9E%90%E6%95%99%E7%A8%8B-%E4%B8%80/">可能是全网讲最细的安卓resources.arsc解析教程(一)</a></p>
+:ET

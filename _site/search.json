@@ -1,6 +1,14 @@
 [
   
     {
+      "title"    : "插件化_换肤方案",
+      "subtitle" : "插件化_换肤方案",
+      "tags"     : "插件化, 换肤",
+      "url"      : "/2021/01/20/plugin_change_skin/",
+      "date"     : "2021-01-20 00:00:00 +0800"
+    } ,
+  
+    {
       "title"    : "插件化_Hook机制之动态代理",
       "subtitle" : "Android插件化_Hook机制之动态代理",
       "tags"     : "Android, 插件化, 动态代理",
