@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Ocean Zhao Blog</title>
-    <description>关于程序与设计、黑客与画家 | 黄玄，Web &amp; Mobile Lover，Software Engineer，UX Designer | 这里是 @Hux黄玄 的个人博客，与你一起发现更大的世界。</description>
-    <link>https://huangxuan.me/</link>
-    <atom:link href="https://huangxuan.me/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 19 Jan 2021 21:21:22 +0800</pubDate>
-    <lastBuildDate>Tue, 19 Jan 2021 21:21:22 +0800</lastBuildDate>
+    <title>赵海洋的技术博客</title>
+    <description>Android 技术工程师 | Android Software Engineer</description>
+    <link>http://forevercoder.com//</link>
+    <atom:link href="http://forevercoder.com//feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Tue, 19 Jan 2021 22:11:31 +0800</pubDate>
+    <lastBuildDate>Tue, 19 Jan 2021 22:11:31 +0800</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -347,8 +347,8 @@
 &lt;/ul&gt;
 </description>
         <pubDate>Tue, 19 Jan 2021 00:00:00 +0800</pubDate>
-        <link>https://huangxuan.me/2021/01/19/dynamic_proxy_hook/</link>
-        <guid isPermaLink="true">https://huangxuan.me/2021/01/19/dynamic_proxy_hook/</guid>
+        <link>http://forevercoder.com//2021/01/19/dynamic_proxy_hook/</link>
+        <guid isPermaLink="true">http://forevercoder.com//2021/01/19/dynamic_proxy_hook/</guid>
         
         <category>Android</category>
         
