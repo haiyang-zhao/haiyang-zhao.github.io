@@ -1,6 +1,14 @@
 [
   
     {
+      "title"    : "Jetpack组件_01_Lifecycle_LiveData",
+      "subtitle" : "Jetpack_01_Lifecycle_LiveData",
+      "tags"     : "Jetpack",
+      "url"      : "/2021/01/24/Jetpack_01_lifecycle_livedata/",
+      "date"     : "2021-01-24 00:00:00 +0800"
+    } ,
+  
+    {
       "title"    : "插件化_换肤方案",
       "subtitle" : "插件化_换肤方案",
       "tags"     : "插件化, 换肤",
