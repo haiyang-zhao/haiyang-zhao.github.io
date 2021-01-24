@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="Android 技术工程师 | Android Software Engineer">
+    <meta name="keywords"  content="Android 技术工程师 | Android Software Engineer">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Jetpack组件_02_Databinding - 赵海洋的技术博客 | Ocean Zhao Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="简介
+
+  数据绑定库是一种支持库，借助该库，您可以使用声明性格式（而非程序化地）将布局中的界面组件绑定到应用中的数据源。
+
+">
+    
+    <meta property="article:published_time" content="2021-01-24T00:00:00Z">
+    
+    
+    <meta property="article:author" content="hyzhao">
+    
+    
+    <meta property="article:tag" content="Jetpack">
+    
+    
+    <meta property="og:image" content="http://forevercoder.com//img/avatar-logo.png">
+    <meta property="og:url" content="http://forevercoder.com//2021/01/24/Jetpack_02_databinding/">
+    <meta property="og:site_name" content="赵海洋的技术博客 | Ocean Zhao Blog">
+    
+    <title>Jetpack组件_02_Databinding - 赵海洋的技术博客 | Ocean Zhao Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://forevercoder.com//2021/01/24/Jetpack_02_databinding/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">赵海洋的技术博客</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div id="huxblog_navbar">
+                <div class="navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="/">Home</a>
+                        </li>
+                        
+                        
+                        
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                        
+                        
+                        <li>
+                            <a href="/archive/">Archive</a>
+                        </li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <li class="search-icon">
+                            <a href="javascript:void(0)">
+                                <i class="fa fa-search"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <script>
+        // Drop Bootstarp low-performance Navbar
+        // Use customize navbar with high-quality material design animation
+        // in high-perf jank-free CSS3 implementation
+        var $body = document.body;
+        var $toggle = document.querySelector('.navbar-toggle');
+        var $navbar = document.querySelector('#huxblog_navbar');
+        var $collapse = document.querySelector('.navbar-collapse');
+
+        var __HuxNav__ = {
+            close: function () {
+                $navbar.className = " ";
+                // wait until animation end.
+                setTimeout(function () {
+                    // prevent frequently toggle
+                    if ($navbar.className.indexOf('in') < 0) {
+                        $collapse.style.height = "0px"
+                    }
+                }, 400)
+            },
+            open: function () {
+                $collapse.style.height = "auto"
+                $navbar.className += " in";
+            }
+        }
+
+        // Bind Event
+        $toggle.addEventListener('click', function (e) {
+            if ($navbar.className.indexOf('in') > 0) {
+                __HuxNav__.close()
+            } else {
+                __HuxNav__.open()
+            }
+        })
+
+        /**
+         * Since Fastclick is used to delegate 'touchstart' globally
+         * to hack 300ms delay in iOS by performing a fake 'click',
+         * Using 'e.stopPropagation' to stop 'touchstart' event from 
+         * $toggle/$collapse will break global delegation.
+         * 
+         * Instead, we use a 'e.target' filter to prevent handler
+         * added to document close HuxNav.  
+         *
+         * Also, we use 'click' instead of 'touchstart' as compromise
+         */
+        document.addEventListener('click', function (e) {
+            if (e.target == $toggle) return;
+            if (e.target.className == 'icon-bar') return;
+            __HuxNav__.close();
+        })
+    </script>
+    <!-- Search -->
+<div class="search-page">
+  <div class="search-icon-close-container">
+    <span class="search-icon-close">
+      <i class="fa fa-chevron-down"></i>
+    </span>
+  </div>
+  <div class="search-main container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <form></form>
+        <input type="text" id="search-input" placeholder="$ grep...">
+        </form>
+        <div id="search-results" class="mini-post-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/post-bg-2015.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/post-bg-2015.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=Jetpack" title="Jetpack">Jetpack</a>
+                        
+                    </div>
+                    <h1>Jetpack组件_02_Databinding</h1>
+                    
+                    <h2 class="subheading">Jetpack组件_02_Databinding</h2>
+                    <span class="meta">Posted by hyzhao on January 24, 2021</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<h1 id="简介">简介</h1>
+<blockquote>
+  <p>数据绑定库是一种支持库，借助该库，您可以使用声明性格式（而非程序化地）将布局中的界面组件绑定到应用中的数据源。</p>
+</blockquote>
+
+<p>布局通常是使用调用界面框架方法的代码在 Activity 中定义的。例如，以下代码调用 findViewById() 来查找 TextView 微件并将其绑定到 viewModel 变量的 userName 属性：</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="n">findViewById</span><span class="p">&lt;</span><span class="nc">TextView</span><span class="p">&gt;(</span><span class="nc">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">sample_text</span><span class="p">).</span><span class="nf">apply</span> <span class="p">{</span>
+    <span class="n">text</span> <span class="p">=</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">userName</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>以下示例展示了如何在布局文件中使用数据绑定库将文本直接分配到微件。这样就无需调用上述任何 Java 代码。请注意赋值表达式中 @{} 语法的使用：</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="nt">&lt;TextView</span> <span class="na">android:text=</span><span class="s">"@{viewmodel.userName}"</span> <span class="nt">/&gt;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<h1 id="gradle配置">gradle配置</h1>
+
+<div class="language-gradle highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre> <span class="n">defaultConfig</span> <span class="o">{</span>
+    <span class="o">....</span>
+    <span class="n">dataBinding</span> <span class="o">{</span>
+        <span class="n">enabled</span> <span class="kc">true</span>
+    <span class="o">}</span>
+ <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="基本使用">基本使用</h1>
+
+<ol>
+  <li>定义实体对象</li>
+</ol>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="rouge-code"><pre><span class="kd">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">:</span> <span class="nc">BaseObservable</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="nd">@Bindable</span>
+    <span class="kd">var</span> <span class="py">name</span><span class="p">:</span> <span class="nc">String</span> <span class="p">=</span> <span class="n">name</span>
+        <span class="k">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">field</span> <span class="p">=</span> <span class="n">value</span>
+            <span class="nf">notifyPropertyChanged</span><span class="p">(</span><span class="nc">BR</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="p">}</span>
+
+
+    <span class="nd">@Bindable</span>
+    <span class="kd">var</span> <span class="py">age</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">=</span> <span class="n">age</span>
+        <span class="k">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">field</span> <span class="p">=</span> <span class="n">value</span>
+            <span class="nf">notifyPropertyChanged</span><span class="p">(</span><span class="nc">BR</span><span class="p">.</span><span class="n">age</span><span class="p">)</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<ol>
+  <li>布局文件中使用
+activity_main.xml
+根节点用layout元素，并添加data节点，声明要使用的实体对象
+```xml
+&lt;?xml version=”1.0” encoding=”utf-8”?&gt;</li>
+</ol>
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable name="user" type="com.zhy.databinding.User" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="match_parent" tools:context=".MainActivity">
+
+        <TextView android:id="@+id/tv_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{user.name}" app:layout_constraintBottom_toTopOf="@+id/tv_age" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintRight_toRightOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_chainStyle="packed" />
+
+
+        <TextView android:id="@+id/tv_age" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{String.valueOf(user.age)}" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintLeft_toLeftOf="parent" app:layout_constraintRight_toRightOf="parent" app:layout_constraintTop_toBottomOf="@+id/tv_name" />
+
+        <button android:id="@+id/btn" android:layout_width="wrap_content" android:layout_height="wrap_content" app:layout_constraintend_toendof="parent" app:layout_constraintstart_tostartof="parent" app:layout_constrainttop_tobottomof="@+id/tv_age" android:text="点击测试" />
+
+        <button android:layout_margintop="10dp" android:id="@+id/btn2" android:layout_width="wrap_content" android:layout_height="wrap_content" app:layout_constraintend_toendof="parent" app:layout_constraintstart_tostartof="parent" app:layout_constrainttop_tobottomof="@+id/btn" android:text="单个属性变化" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre></td><td class="rouge-code"><pre>3. 代码中使用
+```kotlin
+class MainActivity : AppCompatActivity() {
+
+    private var age: Int = 18
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val binding: ActivityMainBinding = DataBindingUtil.setContentView(
+            this, R.layout.activity_main
+        )
+        var user = User("张三", age++)
+        binding.user = user
+
+        binding.btn.setOnClickListener {
+            //对象改变
+            user = User("张三", age++)
+            binding.user = user
+        }
+
+        binding.btn2.setOnClickListener {
+            //对象属性改变
+            age++
+            user.age = age
+            user.name = "张三$age"
+        }
+    }
+}
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="核心原理">核心原理</h1>
+
+<h2 id="layout-布局文件分离">layout 布局文件分离</h2>
+
+<p>编译时会根据activity_main.xml生成两份xml文件</p>
+<ul>
+  <li>build/intermediates/data_binding_layout_info_type_merge/debug/out/activity_main-layout.xml</li>
+</ul>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+</pre></td><td class="rouge-code"><pre><span class="cp">&lt;?xml version="1.0" encoding="utf-8" standalone="yes"?&gt;</span>
+<span class="nt">&lt;Layout</span> <span class="na">directory=</span><span class="s">"layout"</span> <span class="na">filePath=</span><span class="s">"app/src/main/res/layout/activity_main.xml"</span> <span class="na">isBindingData=</span><span class="s">"true"</span> <span class="na">isMerge=</span><span class="s">"false"</span> <span class="na">layout=</span><span class="s">"activity_main"</span> <span class="na">modulePackage=</span><span class="s">"com.zhy.databinding"</span> <span class="na">rootNodeType=</span><span class="s">"androidx.constraintlayout.widget.ConstraintLayout"</span><span class="nt">&gt;</span>
+	<span class="nt">&lt;Variables</span> <span class="na">declared=</span><span class="s">"true"</span> <span class="na">name=</span><span class="s">"user"</span> <span class="na">type=</span><span class="s">"com.zhy.databinding.User"</span><span class="nt">&gt;</span>
+		<span class="nt">&lt;location</span> <span class="na">endLine=</span><span class="s">"9"</span> <span class="na">endOffset=</span><span class="s">"45"</span> <span class="na">startLine=</span><span class="s">"7"</span> <span class="na">startOffset=</span><span class="s">"8"</span><span class="nt">/&gt;</span>
+	<span class="nt">&lt;/Variables&gt;</span>
+	<span class="nt">&lt;Targets&gt;</span>
+		<span class="nt">&lt;Target</span> <span class="na">tag=</span><span class="s">"layout/activity_main_0"</span> <span class="na">view=</span><span class="s">"androidx.constraintlayout.widget.ConstraintLayout"</span><span class="nt">&gt;</span>
+			<span class="nt">&lt;Expressions/&gt;</span>
+			<span class="nt">&lt;location</span> <span class="na">endLine=</span><span class="s">"59"</span> <span class="na">endOffset=</span><span class="s">"55"</span> <span class="na">startLine=</span><span class="s">"12"</span> <span class="na">startOffset=</span><span class="s">"4"</span><span class="nt">/&gt;</span>
+		<span class="nt">&lt;/Target&gt;</span>
+		<span class="nt">&lt;Target</span> <span class="na">id=</span><span class="s">"@+id/tv_name"</span> <span class="na">tag=</span><span class="s">"binding_1"</span> <span class="na">view=</span><span class="s">"TextView"</span><span class="nt">&gt;</span>
+			<span class="nt">&lt;Expressions&gt;</span>
+				<span class="nt">&lt;Expression</span> <span class="na">attribute=</span><span class="s">"android:text"</span> <span class="na">text=</span><span class="s">"user.name"</span><span class="nt">&gt;</span>
+					<span class="nt">&lt;Location</span> <span class="na">endLine=</span><span class="s">"21"</span> <span class="na">endOffset=</span><span class="s">"38"</span> <span class="na">startLine=</span><span class="s">"21"</span> <span class="na">startOffset=</span><span class="s">"12"</span><span class="nt">/&gt;</span>
+					<span class="nt">&lt;TwoWay&gt;</span>false<span class="nt">&lt;/TwoWay&gt;</span>
+					<span class="nt">&lt;ValueLocation</span> <span class="na">endLine=</span><span class="s">"21"</span> <span class="na">endOffset=</span><span class="s">"36"</span> <span class="na">startLine=</span><span class="s">"21"</span> <span class="na">startOffset=</span><span class="s">"28"</span><span class="nt">/&gt;</span>
+				<span class="nt">&lt;/Expression&gt;</span>
+			<span class="nt">&lt;/Expressions&gt;</span>
+			<span class="nt">&lt;location</span> <span class="na">endLine=</span><span class="s">"26"</span> <span class="na">endOffset=</span><span class="s">"63"</span> <span class="na">startLine=</span><span class="s">"17"</span> <span class="na">startOffset=</span><span class="s">"8"</span><span class="nt">/&gt;</span>
+		<span class="nt">&lt;/Target&gt;</span>
+		<span class="nt">&lt;Target</span> <span class="na">id=</span><span class="s">"@+id/tv_age"</span> <span class="na">tag=</span><span class="s">"binding_2"</span> <span class="na">view=</span><span class="s">"TextView"</span><span class="nt">&gt;</span>
+			<span class="nt">&lt;Expressions&gt;</span>
+				<span class="nt">&lt;Expression</span> <span class="na">attribute=</span><span class="s">"android:text"</span> <span class="na">text=</span><span class="s">"String.valueOf(user.age)"</span><span class="nt">&gt;</span>
+					<span class="nt">&lt;Location</span> <span class="na">endLine=</span><span class="s">"33"</span> <span class="na">endOffset=</span><span class="s">"53"</span> <span class="na">startLine=</span><span class="s">"33"</span> <span class="na">startOffset=</span><span class="s">"12"</span><span class="nt">/&gt;</span>
+					<span class="nt">&lt;TwoWay&gt;</span>false<span class="nt">&lt;/TwoWay&gt;</span>
+					<span class="nt">&lt;ValueLocation</span> <span class="na">endLine=</span><span class="s">"33"</span> <span class="na">endOffset=</span><span class="s">"51"</span> <span class="na">startLine=</span><span class="s">"33"</span> <span class="na">startOffset=</span><span class="s">"28"</span><span class="nt">/&gt;</span>
+				<span class="nt">&lt;/Expression&gt;</span>
+			<span class="nt">&lt;/Expressions&gt;</span>
+			<span class="nt">&lt;location</span> <span class="na">endLine=</span><span class="s">"37"</span> <span class="na">endOffset=</span><span class="s">"64"</span> <span class="na">startLine=</span><span class="s">"29"</span> <span class="na">startOffset=</span><span class="s">"8"</span><span class="nt">/&gt;</span>
+		<span class="nt">&lt;/Target&gt;</span>
+		<span class="nt">&lt;Target</span> <span class="na">id=</span><span class="s">"@+id/btn"</span> <span class="na">view=</span><span class="s">"Button"</span><span class="nt">&gt;</span>
+			<span class="nt">&lt;Expressions/&gt;</span>
+			<span class="nt">&lt;location</span> <span class="na">endLine=</span><span class="s">"47"</span> <span class="na">endOffset=</span><span class="s">"13"</span> <span class="na">startLine=</span><span class="s">"39"</span> <span class="na">startOffset=</span><span class="s">"8"</span><span class="nt">/&gt;</span>
+		<span class="nt">&lt;/Target&gt;</span>
+		<span class="nt">&lt;Target</span> <span class="na">id=</span><span class="s">"@+id/btn2"</span> <span class="na">view=</span><span class="s">"Button"</span><span class="nt">&gt;</span>
+			<span class="nt">&lt;Expressions/&gt;</span>
+			<span class="nt">&lt;location</span> <span class="na">endLine=</span><span class="s">"58"</span> <span class="na">endOffset=</span><span class="s">"13"</span> <span class="na">startLine=</span><span class="s">"49"</span> <span class="na">startOffset=</span><span class="s">"8"</span><span class="nt">/&gt;</span>
+		<span class="nt">&lt;/Target&gt;</span>
+	<span class="nt">&lt;/Targets&gt;</span>
+<span class="nt">&lt;/Layout&gt;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>每个View都对应一个Target元素，Target记录了view的id,tag,以及使用的表达式(使用@{})等等信息</p>
+
+<ul>
+  <li>build/intermediates/incremental/mergeDebugResources/stripped.dir/layout/activity_main.xml</li>
+</ul>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+</pre></td><td class="rouge-code"><pre><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+
+                                                       
+                                                   
+
+    
+
+                 
+                       
+                                              
+           
+
+    <span class="nt">&lt;androidx.constraintlayout.widget.ConstraintLayout</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+        <span class="na">tools:context=</span><span class="s">".MainActivity"</span> <span class="na">android:tag=</span><span class="s">"layout/activity_main_0"</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span> <span class="na">xmlns:app=</span><span class="s">"http://schemas.android.com/apk/res-auto"</span> <span class="na">xmlns:tools=</span><span class="s">"http://schemas.android.com/tools"</span><span class="nt">&gt;</span>
+
+        <span class="nt">&lt;TextView</span>
+            <span class="na">android:id=</span><span class="s">"@+id/tv_name"</span>
+            <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:tag=</span><span class="s">"binding_1"</span>    
+            <span class="na">app:layout_constraintBottom_toTopOf=</span><span class="s">"@+id/tv_age"</span>
+            <span class="na">app:layout_constraintLeft_toLeftOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintRight_toRightOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintTop_toTopOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintVertical_chainStyle=</span><span class="s">"packed"</span> <span class="nt">/&gt;</span>
+
+
+        <span class="nt">&lt;TextView</span>
+            <span class="na">android:id=</span><span class="s">"@+id/tv_age"</span>
+            <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:tag=</span><span class="s">"binding_2"</span>                   
+            <span class="na">app:layout_constraintBottom_toBottomOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintLeft_toLeftOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintRight_toRightOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintTop_toBottomOf=</span><span class="s">"@+id/tv_name"</span> <span class="nt">/&gt;</span>
+
+        <span class="nt">&lt;Button</span>
+            <span class="na">android:id=</span><span class="s">"@+id/btn"</span>
+            <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+            <span class="na">app:layout_constraintEnd_toEndOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintStart_toStartOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintTop_toBottomOf=</span><span class="s">"@+id/tv_age"</span>
+            <span class="na">android:text=</span><span class="s">"点击测试"</span>
+            <span class="nt">/&gt;</span>
+
+        <span class="nt">&lt;Button</span>
+            <span class="na">android:layout_marginTop=</span><span class="s">"10dp"</span>
+            <span class="na">android:id=</span><span class="s">"@+id/btn2"</span>
+            <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+            <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+            <span class="na">app:layout_constraintEnd_toEndOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintStart_toStartOf=</span><span class="s">"parent"</span>
+            <span class="na">app:layout_constraintTop_toBottomOf=</span><span class="s">"@+id/btn"</span>
+            <span class="na">android:text=</span><span class="s">"单个属性变化"</span>
+            <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>这个xml会剔除掉layout节点，并且为绑定了@{}的View添加一个tag</p>
+
+<h2 id="源码分析">源码分析</h2>
+
+<p>首先看apt生成的类</p>
+
+<p><img src="https://app.yinxiang.com/FileSharing.action?hash=1/6468c19fcab299cfcda2f3847e95aeab-89883" alt="6468c19fcab299cfcda2f3847e95aeab.png" /></p>
+
+<p>类图如下:</p>
+
+<p><img src="https://app.yinxiang.com/FileSharing.action?hash=1/297aa8265830b304536747f02a8a95c7-38316" alt="297aa8265830b304536747f02a8a95c7.png" /></p>
+
+<h3 id="入口1-databindingutilsetcontentview">入口1： DataBindingUtil.setContentView</h3>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre><span class="c1">//DataBindingUtil.java</span>
+<span class="k">public</span> <span class="n">static</span> <span class="p">&lt;</span><span class="nc">T</span> <span class="n">extends</span> <span class="nc">ViewDataBinding</span><span class="p">&gt;</span> <span class="nc">T</span> <span class="nf">setContentView</span><span class="p">(</span><span class="nd">@NonNull</span> <span class="nc">Activity</span> <span class="n">activity</span><span class="p">,</span>
+        <span class="n">int</span> <span class="n">layoutId</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nf">setContentView</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">layoutId</span><span class="p">,</span> <span class="n">sDefaultComponent</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>setContentView方法重载：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="o">&lt;</span><span class="no">T</span> <span class="kd">extends</span> <span class="nc">ViewDataBinding</span><span class="o">&gt;</span> <span class="no">T</span> <span class="nf">setContentView</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="nc">Activity</span> <span class="n">activity</span><span class="o">,</span>
+        <span class="kt">int</span> <span class="n">layoutId</span><span class="o">,</span> <span class="nd">@Nullable</span> <span class="nc">DataBindingComponent</span> <span class="n">bindingComponent</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">activity</span><span class="o">.</span><span class="na">setContentView</span><span class="o">(</span><span class="n">layoutId</span><span class="o">);</span>
+    <span class="nc">View</span> <span class="n">decorView</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="na">getWindow</span><span class="o">().</span><span class="na">getDecorView</span><span class="o">();</span>
+    <span class="nc">ViewGroup</span> <span class="n">contentView</span> <span class="o">=</span> <span class="o">(</span><span class="nc">ViewGroup</span><span class="o">)</span> <span class="n">decorView</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">content</span><span class="o">);</span>
+    <span class="k">return</span> <span class="nf">bindToAddedViews</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">contentView</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">layoutId</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>从这个方法可以看出activity和xml还是通过setContentView(layoutId)来进行关联的，</p>
+
+<p>再看bindToAddedViews方法</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="rouge-code"><pre><span class="kd">private</span> <span class="kd">static</span> <span class="o">&lt;</span><span class="no">T</span> <span class="kd">extends</span> <span class="nc">ViewDataBinding</span><span class="o">&gt;</span> <span class="no">T</span> <span class="nf">bindToAddedViews</span><span class="o">(</span><span class="nc">DataBindingComponent</span> <span class="n">component</span><span class="o">,</span>
+        <span class="nc">ViewGroup</span> <span class="n">parent</span><span class="o">,</span> <span class="kt">int</span> <span class="n">startChildren</span><span class="o">,</span> <span class="kt">int</span> <span class="n">layoutId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">endChildren</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="na">getChildCount</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">childrenAdded</span> <span class="o">=</span> <span class="n">endChildren</span> <span class="o">-</span> <span class="n">startChildren</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">childrenAdded</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="nc">View</span> <span class="n">childView</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="na">getChildAt</span><span class="o">(</span><span class="n">endChildren</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="k">return</span> <span class="nf">bind</span><span class="o">(</span><span class="n">component</span><span class="o">,</span> <span class="n">childView</span><span class="o">,</span> <span class="n">layoutId</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="nc">View</span><span class="o">[]</span> <span class="n">children</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">View</span><span class="o">[</span><span class="n">childrenAdded</span><span class="o">];</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">childrenAdded</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="n">children</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="na">getChildAt</span><span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">startChildren</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="nf">bind</span><span class="o">(</span><span class="n">component</span><span class="o">,</span> <span class="n">children</span><span class="o">,</span> <span class="n">layoutId</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">static</span> <span class="o">&lt;</span><span class="no">T</span> <span class="kd">extends</span> <span class="nc">ViewDataBinding</span><span class="o">&gt;</span> <span class="no">T</span> <span class="nf">bind</span><span class="o">(</span><span class="nc">DataBindingComponent</span> <span class="n">bindingComponent</span><span class="o">,</span> <span class="nc">View</span><span class="o">[]</span> <span class="n">roots</span><span class="o">,</span>
+        <span class="kt">int</span> <span class="n">layoutId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="o">(</span><span class="no">T</span><span class="o">)</span> <span class="n">sMapper</span><span class="o">.</span><span class="na">getDataBinder</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">roots</span><span class="o">,</span> <span class="n">layoutId</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>最终调用到sMapper.getDataBinder，sMapper又是什么呢？</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">private</span> <span class="kd">static</span> <span class="nc">DataBinderMapper</span> <span class="n">sMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DataBinderMapperImpl</span><span class="o">();</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>最后的最后会调到DataBinderMapperImpl的getDataBinder方法。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="c1">//MergedDataBinderMapper.java</span>
+<span class="nd">@Override</span>
+<span class="kd">public</span> <span class="nc">ViewDataBinding</span> <span class="nf">getDataBinder</span><span class="o">(</span><span class="nc">DataBindingComponent</span> <span class="n">bindingComponent</span><span class="o">,</span> <span class="nc">View</span><span class="o">[]</span> <span class="n">view</span><span class="o">,</span>
+        <span class="kt">int</span> <span class="n">layoutId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">for</span><span class="o">(</span><span class="nc">DataBinderMapper</span> <span class="n">mapper</span> <span class="o">:</span> <span class="n">mMappers</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ViewDataBinding</span> <span class="n">result</span> <span class="o">=</span> <span class="n">mapper</span><span class="o">.</span><span class="na">getDataBinder</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">view</span><span class="o">,</span> <span class="n">layoutId</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">loadFeatures</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">getDataBinder</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">view</span><span class="o">,</span> <span class="n">layoutId</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>DataBinderMapperImpl的构造方法中把apt生成的com.zhy.databinding.DataBinderMapperImpl类添加到mMapper集合中</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre><span class="c1">//androidx.databinding.DataBinderMapperImpl.java</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DataBinderMapperImpl</span> <span class="kd">extends</span> <span class="nc">MergedDataBinderMapper</span> <span class="o">{</span>
+  <span class="nc">DataBinderMapperImpl</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">addMapper</span><span class="o">(</span><span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">zhy</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">DataBinderMapperImpl</span><span class="o">());</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>最终调用的是com.zhy.databinding.DataBinderMapperImpl.getDataBinder()方法</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DataBinderMapperImpl</span> <span class="kd">extends</span> <span class="nc">DataBinderMapper</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="no">LAYOUT_ACTIVITYMAIN</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">SparseIntArray</span> <span class="no">INTERNAL_LAYOUT_ID_LOOKUP</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SparseIntArray</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+
+  <span class="kd">static</span> <span class="o">{</span>
+    <span class="no">INTERNAL_LAYOUT_ID_LOOKUP</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">com</span><span class="o">.</span><span class="na">zhy</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">,</span> <span class="no">LAYOUT_ACTIVITYMAIN</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="nc">ViewDataBinding</span> <span class="nf">getDataBinder</span><span class="o">(</span><span class="nc">DataBindingComponent</span> <span class="n">component</span><span class="o">,</span> <span class="nc">View</span> <span class="n">view</span><span class="o">,</span> <span class="kt">int</span> <span class="n">layoutId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">localizedLayoutId</span> <span class="o">=</span> <span class="no">INTERNAL_LAYOUT_ID_LOOKUP</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">layoutId</span><span class="o">);</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">localizedLayoutId</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kd">final</span> <span class="nc">Object</span> <span class="n">tag</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="na">getTag</span><span class="o">();</span>
+      <span class="k">if</span><span class="o">(</span><span class="n">tag</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="s">"view must have a tag"</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="k">switch</span><span class="o">(</span><span class="n">localizedLayoutId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">case</span>  <span class="nl">LAYOUT_ACTIVITYMAIN:</span> <span class="o">{</span>
+          <span class="k">if</span> <span class="o">(</span><span class="s">"layout/activity_main_0"</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">tag</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="nf">ActivityMainBindingImpl</span><span class="o">(</span><span class="n">component</span><span class="o">,</span> <span class="n">view</span><span class="o">);</span>
+          <span class="o">}</span>
+          <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">"The tag for activity_main is invalid. Received: "</span> <span class="o">+</span> <span class="n">tag</span><span class="o">);</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+  <span class="c1">//......</span>
+<span class="o">}</span>  
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>build/intermediates/incremental/mergeDebugResources/stripped.dir/layout/activity_main.xml这个文件中找到tag为layout/activity_main_0的View -&gt;ConstraintLayout,最后返回 ActivityMainBindingImpl(component, view)</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre>  <span class="nt">&lt;androidx.constraintlayout.widget.ConstraintLayout</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+        <span class="na">tools:context=</span><span class="s">".MainActivity"</span> <span class="na">android:tag=</span><span class="s">"layout/activity_main_0"</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span> <span class="na">xmlns:app=</span><span class="s">"http://schemas.android.com/apk/res-auto"</span> <span class="na">xmlns:tools=</span><span class="s">"http://schemas.android.com/tools"</span><span class="nt">&gt;</span>
+       //..... 
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>继续看apt生成的ActivityMainBindingImpl构造方法:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="nf">ActivityMainBindingImpl</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="n">androidx</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">DataBindingComponent</span> <span class="n">bindingComponent</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">View</span> <span class="n">root</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">root</span><span class="o">,</span> <span class="n">mapBindings</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">root</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="n">sIncludes</span><span class="o">,</span> <span class="n">sViewsWithIds</span><span class="o">));</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>继续查看mapBindings方法：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+</pre></td><td class="rouge-code"><pre>    <span class="cm">/**
+     * Walks the view hierarchy under root and pulls out tagged Views, includes, and views with
+     * IDs into an Object[] that is returned. This is used to walk the view hierarchy once to find
+     * all bound and ID'd views.
+     *
+     * @param bindingComponent The binding component to use with this binding.
+     * @param root The root of the view hierarchy to walk.
+     * @param numBindings The total number of ID'd views, views with expressions, and includes
+     * @param includes The include layout information, indexed by their container's index.
+     * @param viewsWithIds Indexes of views that don't have tags, but have IDs.
+     * @return An array of size numBindings containing all Views in the hierarchy that have IDs
+     * (with elements in viewsWithIds), are tagged containing expressions, or the bindings for
+     * included layouts.
+     * @hide
+     */</span>
+    <span class="kd">protected</span> <span class="kd">static</span> <span class="nc">Object</span><span class="o">[]</span> <span class="nf">mapBindings</span><span class="o">(</span><span class="nc">DataBindingComponent</span> <span class="n">bindingComponent</span><span class="o">,</span> <span class="nc">View</span> <span class="n">root</span><span class="o">,</span>
+            <span class="kt">int</span> <span class="n">numBindings</span><span class="o">,</span> <span class="nc">IncludedLayouts</span> <span class="n">includes</span><span class="o">,</span> <span class="nc">SparseIntArray</span> <span class="n">viewsWithIds</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Object</span><span class="o">[]</span> <span class="n">bindings</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="n">numBindings</span><span class="o">];</span>
+        <span class="n">mapBindings</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">root</span><span class="o">,</span> <span class="n">bindings</span><span class="o">,</span> <span class="n">includes</span><span class="o">,</span> <span class="n">viewsWithIds</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">bindings</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>翻译下注释：</p>
+<blockquote>
+  <p>在根目录下遍历视图层次结构，并将带有ID的标记视图，包含视图和ID放入返回的Object []中。 这用于遍历视图层次结构一次以查找所有绑定视图和ID视图。</p>
+</blockquote>
+
+<p>mapBindings()遍历root节点下的所有带tag的view。</p>
+
+<p>再看看另外一个重载的构造方法:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="kd">private</span> <span class="nf">ActivityMainBindingImpl</span><span class="o">(</span><span class="n">androidx</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">DataBindingComponent</span> <span class="n">bindingComponent</span><span class="o">,</span> <span class="nc">View</span> <span class="n">root</span><span class="o">,</span> <span class="nc">Object</span><span class="o">[]</span> <span class="n">bindings</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">(</span><span class="n">bindingComponent</span><span class="o">,</span> <span class="n">root</span><span class="o">,</span> <span class="mi">1</span>
+        <span class="o">,</span> <span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">widget</span><span class="o">.</span><span class="na">Button</span><span class="o">)</span> <span class="n">bindings</span><span class="o">[</span><span class="mi">3</span><span class="o">]</span>
+        <span class="o">,</span> <span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">widget</span><span class="o">.</span><span class="na">Button</span><span class="o">)</span> <span class="n">bindings</span><span class="o">[</span><span class="mi">4</span><span class="o">]</span>
+        <span class="o">,</span> <span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">widget</span><span class="o">.</span><span class="na">TextView</span><span class="o">)</span> <span class="n">bindings</span><span class="o">[</span><span class="mi">2</span><span class="o">]</span>
+        <span class="o">,</span> <span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">widget</span><span class="o">.</span><span class="na">TextView</span><span class="o">)</span> <span class="n">bindings</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
+        <span class="o">);</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">mboundView0</span> <span class="o">=</span> <span class="o">(</span><span class="n">androidx</span><span class="o">.</span><span class="na">constraintlayout</span><span class="o">.</span><span class="na">widget</span><span class="o">.</span><span class="na">ConstraintLayout</span><span class="o">)</span> <span class="n">bindings</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">mboundView0</span><span class="o">.</span><span class="na">setTag</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">tvAge</span><span class="o">.</span><span class="na">setTag</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">tvName</span><span class="o">.</span><span class="na">setTag</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+    <span class="n">setRootTag</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+    <span class="c1">// listeners</span>
+    <span class="n">invalidateAll</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>这样就解析所有的findViewById的View了
+至此，可以看到xml中申明的view会在解析阶段存储在ActivityMainBindingImpl中，这也就是为什么能在Activity中通过binding直接访问View。</p>
+
+<h3 id="入口2-bindinguser--user">入口2： binding.user = user</h3>
+
+<p>调用的是ActivityMainBindingImpl.setUser方法</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="rouge-code"><pre><span class="c1">//com.zhy.databinding.databinding.ActivityMainBindingImpl.java</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUser</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="n">com</span><span class="o">.</span><span class="na">zhy</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">User</span> <span class="nc">User</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">updateRegistration</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="nc">User</span><span class="o">);</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">mUser</span> <span class="o">=</span> <span class="nc">User</span><span class="o">;</span>
+    <span class="kd">synchronized</span><span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mDirtyFlags</span> <span class="o">|=</span> <span class="mh">0x1</span><span class="no">L</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="n">notifyPropertyChanged</span><span class="o">(</span><span class="no">BR</span><span class="o">.</span><span class="na">user</span><span class="o">);</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">requestRebind</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>继续看下updateRegistration(0, User);</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre>
+<span class="kd">protected</span> <span class="kt">boolean</span> <span class="nf">updateRegistration</span><span class="o">(</span><span class="kt">int</span> <span class="n">localFieldId</span><span class="o">,</span> <span class="nc">Observable</span> <span class="n">observable</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">updateRegistration</span><span class="o">(</span><span class="n">localFieldId</span><span class="o">,</span> <span class="n">observable</span><span class="o">,</span> <span class="no">CREATE_PROPERTY_LISTENER</span><span class="o">);</span>
+<span class="o">}</span>
+    
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>CREATE_PROPERTY_LISTENER的代码如下：为一个CreateWeakListener常量</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="rouge-code"><pre><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">CreateWeakListener</span> <span class="no">CREATE_PROPERTY_LISTENER</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CreateWeakListener</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">WeakListener</span> <span class="nf">create</span><span class="o">(</span><span class="nc">ViewDataBinding</span> <span class="n">viewDataBinding</span><span class="o">,</span> <span class="kt">int</span> <span class="n">localFieldId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">WeakPropertyListener</span><span class="o">(</span><span class="n">viewDataBinding</span><span class="o">,</span> <span class="n">localFieldId</span><span class="o">).</span><span class="na">getListener</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">};</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>继续看updateRegistration(localFieldId, observable, CREATE_PROPERTY_LISTENER）方法</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="rouge-code"><pre><span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">updateRegistration</span><span class="o">(</span><span class="kt">int</span> <span class="n">localFieldId</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">observable</span><span class="o">,</span>
+        <span class="nc">CreateWeakListener</span> <span class="n">listenerCreator</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">observable</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">unregisterFrom</span><span class="o">(</span><span class="n">localFieldId</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="nc">WeakListener</span> <span class="n">listener</span> <span class="o">=</span> <span class="n">mLocalFieldObservers</span><span class="o">[</span><span class="n">localFieldId</span><span class="o">];</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">listener</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">registerTo</span><span class="o">(</span><span class="n">localFieldId</span><span class="o">,</span> <span class="n">observable</span><span class="o">,</span> <span class="n">listenerCreator</span><span class="o">);</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">listener</span><span class="o">.</span><span class="na">getTarget</span><span class="o">()</span> <span class="o">==</span> <span class="n">observable</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span><span class="c1">//nothing to do, same object</span>
+    <span class="o">}</span>
+    <span class="n">unregisterFrom</span><span class="o">(</span><span class="n">localFieldId</span><span class="o">);</span>
+    <span class="n">registerTo</span><span class="o">(</span><span class="n">localFieldId</span><span class="o">,</span> <span class="n">observable</span><span class="o">,</span> <span class="n">listenerCreator</span><span class="o">);</span>
+    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>此方法就是把CreateWeakListener 和数据的id形成绑定关系，数据的Id可通过BR文件内容获得，BR文件内容如下：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre><span class="kn">package</span> <span class="nn">com.zhy.databinding</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BR</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">_all</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">age</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">name</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">user</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>name和age是因为我们重写了set方法，并加入了@Bindable注解，而user 是定义在xml中的，都会在BR文件中生成对应的ID，然后继续看notifyPropertyChanged方法：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">notifyPropertyChanged</span><span class="o">(</span><span class="kt">int</span> <span class="n">fieldId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCallbacks</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">mCallbacks</span><span class="o">.</span><span class="na">notifyCallbacks</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">fieldId</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>这个方法就跟踪到这，后面会继续讨论，接下来看super.requestRebind方法:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+</pre></td><td class="rouge-code"><pre><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">requestRebind</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mContainingBinding</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mContainingBinding</span><span class="o">.</span><span class="na">requestRebind</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="nc">LifecycleOwner</span> <span class="n">owner</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">mLifecycleOwner</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">owner</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Lifecycle</span><span class="o">.</span><span class="na">State</span> <span class="n">state</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="na">getLifecycle</span><span class="o">().</span><span class="na">getCurrentState</span><span class="o">();</span>
+            <span class="k">if</span> <span class="o">(!</span><span class="n">state</span><span class="o">.</span><span class="na">isAtLeast</span><span class="o">(</span><span class="nc">Lifecycle</span><span class="o">.</span><span class="na">State</span><span class="o">.</span><span class="na">STARTED</span><span class="o">))</span> <span class="o">{</span>
+                <span class="k">return</span><span class="o">;</span> <span class="c1">// wait until lifecycle owner is started</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mPendingRebind</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">mPendingRebind</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="no">USE_CHOREOGRAPHER</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mChoreographer</span><span class="o">.</span><span class="na">postFrameCallback</span><span class="o">(</span><span class="n">mFrameCallback</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">mUIThreadHandler</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="n">mRebindRunnable</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>可以看到最后需要Android版本，但是最终都会调用到mRebindRunnable：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+</pre></td><td class="rouge-code"><pre><span class="cm">/**
+ * Runnable executed on animation heartbeat to rebind the dirty Views.
+ */</span>
+<span class="kd">private</span> <span class="kd">final</span> <span class="nc">Runnable</span> <span class="n">mRebindRunnable</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Runnable</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mPendingRebind</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">processReferenceQueue</span><span class="o">();</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="no">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&gt;=</span> <span class="no">VERSION_CODES</span><span class="o">.</span><span class="na">KITKAT</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Nested so that we don't get a lint warning in IntelliJ</span>
+            <span class="k">if</span> <span class="o">(!</span><span class="n">mRoot</span><span class="o">.</span><span class="na">isAttachedToWindow</span><span class="o">())</span> <span class="o">{</span>
+                <span class="c1">// Don't execute the pending bindings until the View</span>
+                <span class="c1">// is attached again.</span>
+                <span class="n">mRoot</span><span class="o">.</span><span class="na">removeOnAttachStateChangeListener</span><span class="o">(</span><span class="no">ROOT_REATTACHED_LISTENER</span><span class="o">);</span>
+                <span class="n">mRoot</span><span class="o">.</span><span class="na">addOnAttachStateChangeListener</span><span class="o">(</span><span class="no">ROOT_REATTACHED_LISTENER</span><span class="o">);</span>
+                <span class="k">return</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">executePendingBindings</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>然后继续看executePendingBindings：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+</pre></td><td class="rouge-code"><pre><span class="cm">/**
+ * Evaluates the pending bindings, updating any Views that have expressions bound to
+ * modified variables. This &lt;b&gt;must&lt;/b&gt; be run on the UI thread.
+ */</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">executePendingBindings</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mContainingBinding</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">executeBindingsInternal</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">mContainingBinding</span><span class="o">.</span><span class="na">executePendingBindings</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+
+<span class="cm">/**
+ * Evaluates the pending bindings without executing the parent bindings.
+ */</span>
+<span class="kd">private</span> <span class="kt">void</span> <span class="nf">executeBindingsInternal</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mIsExecutingPendingBindings</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">requestRebind</span><span class="o">();</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">hasPendingBindings</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="n">mIsExecutingPendingBindings</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="n">mRebindHalted</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mRebindCallbacks</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mRebindCallbacks</span><span class="o">.</span><span class="na">notifyCallbacks</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="no">REBIND</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+
+        <span class="c1">// The onRebindListeners will change mPendingHalted</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mRebindHalted</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mRebindCallbacks</span><span class="o">.</span><span class="na">notifyCallbacks</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="no">HALTED</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">mRebindHalted</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">executeBindings</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mRebindCallbacks</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mRebindCallbacks</span><span class="o">.</span><span class="na">notifyCallbacks</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="no">REBOUND</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">mIsExecutingPendingBindings</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>这里最终会调用到executeBindings方法，但他是一个抽象方法，所以看他的实现就好了：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+</pre></td><td class="rouge-code"><pre>   <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">executeBindings</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kt">long</span> <span class="n">dirtyFlags</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="kd">synchronized</span><span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">dirtyFlags</span> <span class="o">=</span> <span class="n">mDirtyFlags</span><span class="o">;</span>
+            <span class="n">mDirtyFlags</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">userName</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">userAge</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="n">com</span><span class="o">.</span><span class="na">zhy</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">User</span> <span class="n">user</span> <span class="o">=</span> <span class="n">mUser</span><span class="o">;</span>
+        <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">stringValueOfUserAge</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+        <span class="k">if</span> <span class="o">((</span><span class="n">dirtyFlags</span> <span class="o">&amp;</span> <span class="mh">0xf</span><span class="no">L</span><span class="o">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+
+
+            <span class="k">if</span> <span class="o">((</span><span class="n">dirtyFlags</span> <span class="o">&amp;</span> <span class="mh">0xb</span><span class="no">L</span><span class="o">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+
+                    <span class="k">if</span> <span class="o">(</span><span class="n">user</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="c1">// read user.name</span>
+                        <span class="n">userName</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+                    <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="k">if</span> <span class="o">((</span><span class="n">dirtyFlags</span> <span class="o">&amp;</span> <span class="mh">0xd</span><span class="no">L</span><span class="o">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+
+                    <span class="k">if</span> <span class="o">(</span><span class="n">user</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="c1">// read user.age</span>
+                        <span class="n">userAge</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="na">getAge</span><span class="o">();</span>
+                    <span class="o">}</span>
+
+
+                    <span class="c1">// read String.valueOf(user.age)</span>
+                    <span class="n">stringValueOfUserAge</span> <span class="o">=</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">userAge</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="c1">// batch finished</span>
+        <span class="k">if</span> <span class="o">((</span><span class="n">dirtyFlags</span> <span class="o">&amp;</span> <span class="mh">0xd</span><span class="no">L</span><span class="o">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// api target 1</span>
+
+            <span class="n">androidx</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">adapters</span><span class="o">.</span><span class="na">TextViewBindingAdapter</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">tvAge</span><span class="o">,</span> <span class="n">stringValueOfUserAge</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">((</span><span class="n">dirtyFlags</span> <span class="o">&amp;</span> <span class="mh">0xb</span><span class="no">L</span><span class="o">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// api target 1</span>
+
+            <span class="n">androidx</span><span class="o">.</span><span class="na">databinding</span><span class="o">.</span><span class="na">adapters</span><span class="o">.</span><span class="na">TextViewBindingAdapter</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">tvName</span><span class="o">,</span> <span class="n">userName</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>到这里应该就都能看的懂了，就是通过一层层回调以后最终还是会通过setText来更新UI。</p>
+
+<h3 id="入口3notifypropertychangedbrage">入口3：notifyPropertyChanged(BR.age)</h3>
+
+<p>调用user.age = age时，会调用user.setAge()方法，会调用notifyPropertyChanged(BR.age)</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">notifyPropertyChanged</span><span class="o">(</span><span class="kt">int</span> <span class="n">fieldId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCallbacks</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">mCallbacks</span><span class="o">.</span><span class="na">notifyCallbacks</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">fieldId</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>接上前面的，单数据发生变更时，都会调用 mCallbacks.notifyCallbacks：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">notifyCallbacks</span><span class="o">(</span><span class="no">T</span> <span class="n">sender</span><span class="o">,</span> <span class="kt">int</span> <span class="n">arg</span><span class="o">,</span> <span class="no">A</span> <span class="n">arg2</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">mNotificationLevel</span><span class="o">++;</span>
+    <span class="n">notifyRecurse</span><span class="o">(</span><span class="n">sender</span><span class="o">,</span> <span class="n">arg</span><span class="o">,</span> <span class="n">arg2</span><span class="o">);</span>
+    <span class="n">mNotificationLevel</span><span class="o">--;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mNotificationLevel</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mRemainderRemoved</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">mRemainderRemoved</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> <span class="o">{</span>
+                <span class="kd">final</span> <span class="kt">long</span> <span class="n">removedBits</span> <span class="o">=</span> <span class="n">mRemainderRemoved</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">removedBits</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">removeRemovedCallbacks</span><span class="o">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span> <span class="o">*</span> <span class="nc">Long</span><span class="o">.</span><span class="na">SIZE</span><span class="o">,</span> <span class="n">removedBits</span><span class="o">);</span>
+                    <span class="n">mRemainderRemoved</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mFirst64Removed</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">removeRemovedCallbacks</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">mFirst64Removed</span><span class="o">);</span>
+            <span class="n">mFirst64Removed</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>中间调用 notifyRecurse()方法</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre></td><td class="rouge-code"><pre>   <span class="kd">private</span> <span class="kt">void</span> <span class="nf">notifyRecurse</span><span class="o">(</span><span class="no">T</span> <span class="n">sender</span><span class="o">,</span> <span class="kt">int</span> <span class="n">arg</span><span class="o">,</span> <span class="no">A</span> <span class="n">arg2</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">callbackCount</span> <span class="o">=</span> <span class="n">mCallbacks</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">remainderIndex</span> <span class="o">=</span> <span class="n">mRemainderRemoved</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">?</span> <span class="o">-</span><span class="mi">1</span> <span class="o">:</span> <span class="n">mRemainderRemoved</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+
+        <span class="c1">// Now we've got all callbakcs that have no mRemainderRemoved value, so notify the</span>
+        <span class="c1">// others.</span>
+        <span class="n">notifyRemainder</span><span class="o">(</span><span class="n">sender</span><span class="o">,</span> <span class="n">arg</span><span class="o">,</span> <span class="n">arg2</span><span class="o">,</span> <span class="n">remainderIndex</span><span class="o">);</span>
+
+        <span class="c1">// notifyRemainder notifies all at maxIndex, so we'd normally start at maxIndex + 1</span>
+        <span class="c1">// However, we must also keep track of those in mFirst64Removed, so we add 2 instead:</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">startCallbackIndex</span> <span class="o">=</span> <span class="o">(</span><span class="n">remainderIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="o">)</span> <span class="o">*</span> <span class="nc">Long</span><span class="o">.</span><span class="na">SIZE</span><span class="o">;</span>
+
+        <span class="c1">// The remaining have no bit set</span>
+        <span class="n">notifyCallbacks</span><span class="o">(</span><span class="n">sender</span><span class="o">,</span> <span class="n">arg</span><span class="o">,</span> <span class="n">arg2</span><span class="o">,</span> <span class="n">startCallbackIndex</span><span class="o">,</span> <span class="n">callbackCount</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span>
+    
+    
+<span class="kd">private</span> <span class="kt">void</span> <span class="nf">notifyCallbacks</span><span class="o">(</span><span class="no">T</span> <span class="n">sender</span><span class="o">,</span> <span class="kt">int</span> <span class="n">arg</span><span class="o">,</span> <span class="no">A</span> <span class="n">arg2</span><span class="o">,</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">startIndex</span><span class="o">,</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">endIndex</span><span class="o">,</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">bits</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kt">long</span> <span class="n">bitMask</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">startIndex</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">endIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">((</span><span class="n">bits</span> <span class="o">&amp;</span> <span class="n">bitMask</span><span class="o">)</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mNotifier</span><span class="o">.</span><span class="na">onNotifyCallback</span><span class="o">(</span><span class="n">mCallbacks</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">),</span> <span class="n">sender</span><span class="o">,</span> <span class="n">arg</span><span class="o">,</span> <span class="n">arg2</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">bitMask</span> <span class="o">&lt;&lt;=</span> <span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>    
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>mNotifier.onNotifyCallback是一个抽象方法，所以看他的实现类PropertyChangeRegistry，
+然后继续调用WeakPropertyListener的onPropertyChanged方法：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="rouge-code"><pre><span class="c1">//WeakPropertyListener.java</span>
+<span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onPropertyChanged</span><span class="o">(</span><span class="nc">Observable</span> <span class="n">sender</span><span class="o">,</span> <span class="kt">int</span> <span class="n">propertyId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">ViewDataBinding</span> <span class="n">binder</span> <span class="o">=</span> <span class="n">mListener</span><span class="o">.</span><span class="na">getBinder</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">binder</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nc">Observable</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">mListener</span><span class="o">.</span><span class="na">getTarget</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">obj</span> <span class="o">!=</span> <span class="n">sender</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span> <span class="c1">// notification from the wrong object?</span>
+    <span class="o">}</span>
+    <span class="n">binder</span><span class="o">.</span><span class="na">handleFieldChange</span><span class="o">(</span><span class="n">mListener</span><span class="o">.</span><span class="na">mLocalFieldId</span><span class="o">,</span> <span class="n">sender</span><span class="o">,</span> <span class="n">propertyId</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>又回调到ViewDataBind的handleFieldChange方法：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="rouge-code"><pre>
+<span class="kd">private</span> <span class="kt">void</span> <span class="nf">handleFieldChange</span><span class="o">(</span><span class="kt">int</span> <span class="n">mLocalFieldId</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">object</span><span class="o">,</span> <span class="kt">int</span> <span class="n">fieldId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mInLiveDataRegisterObserver</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// We're in LiveData registration, which always results in a field change</span>
+        <span class="c1">// that we can ignore. The value will be read immediately after anyway, so</span>
+        <span class="c1">// there is no need to be dirty.</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kt">boolean</span> <span class="n">result</span> <span class="o">=</span> <span class="n">onFieldChange</span><span class="o">(</span><span class="n">mLocalFieldId</span><span class="o">,</span> <span class="n">object</span><span class="o">,</span> <span class="n">fieldId</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">result</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">requestRebind</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>最终调用requestRebind</p>
+
+<h3 id="registerto注册监听器">registerTo注册监听器</h3>
+
+<p>现在看下registerTo是如何为User的属性注册监听器的</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="rouge-code"><pre><span class="c1">//ViewDataBinding.java</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">registerTo</span><span class="o">(</span><span class="kt">int</span> <span class="n">localFieldId</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">observable</span><span class="o">,</span>
+        <span class="nc">CreateWeakListener</span> <span class="n">listenerCreator</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">observable</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nc">WeakListener</span> <span class="n">listener</span> <span class="o">=</span> <span class="n">mLocalFieldObservers</span><span class="o">[</span><span class="n">localFieldId</span><span class="o">];</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">listener</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">listener</span> <span class="o">=</span> <span class="n">listenerCreator</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">localFieldId</span><span class="o">);</span>
+        <span class="n">mLocalFieldObservers</span><span class="o">[</span><span class="n">localFieldId</span><span class="o">]</span> <span class="o">=</span> <span class="n">listener</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mLifecycleOwner</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">listener</span><span class="o">.</span><span class="na">setLifecycleOwner</span><span class="o">(</span><span class="n">mLifecycleOwner</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">listener</span><span class="o">.</span><span class="na">setTarget</span><span class="o">(</span><span class="n">observable</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>此时localFieldId是0,对应BR中的_all表示所有BR中的值，listenerCreator是CREATE_PROPERTY_LISTENER对象，它的create方法如下.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">CreateWeakListener</span> <span class="no">CREATE_PROPERTY_LISTENER</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CreateWeakListener</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">WeakListener</span> <span class="nf">create</span><span class="o">(</span><span class="nc">ViewDataBinding</span> <span class="n">viewDataBinding</span><span class="o">,</span> <span class="kt">int</span> <span class="n">localFieldId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">WeakPropertyListener</span><span class="o">(</span><span class="n">viewDataBinding</span><span class="o">,</span> <span class="n">localFieldId</span><span class="o">).</span><span class="na">getListener</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>看看WeakPropertyListener,getListener()返回的是WeakPropertyListener对象</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="rouge-code"><pre> <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">WeakPropertyListener</span> <span class="kd">extends</span> <span class="nc">Observable</span><span class="o">.</span><span class="na">OnPropertyChangedCallback</span>
+            <span class="kd">implements</span> <span class="nc">ObservableReference</span><span class="o">&lt;</span><span class="nc">Observable</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">WeakListener</span><span class="o">&lt;</span><span class="nc">Observable</span><span class="o">&gt;</span> <span class="n">mListener</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">WeakPropertyListener</span><span class="o">(</span><span class="nc">ViewDataBinding</span> <span class="n">binder</span><span class="o">,</span> <span class="kt">int</span> <span class="n">localFieldId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mListener</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WeakListener</span><span class="o">&lt;</span><span class="nc">Observable</span><span class="o">&gt;(</span><span class="n">binder</span><span class="o">,</span> <span class="n">localFieldId</span><span class="o">,</span> <span class="k">this</span><span class="o">);</span>
+    <span class="o">}</span>
+    
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">WeakListener</span><span class="o">&lt;</span><span class="nc">Observable</span><span class="o">&gt;</span> <span class="nf">getListener</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">mListener</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="c1">//...</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>getListener()又返回WeakListener对象，</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+</pre></td><td class="rouge-code"><pre><span class="c1">//androidx.databinding.ViewDataBinding.WeakListener.java</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">WeakListener</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="nc">WeakReference</span><span class="o">&lt;</span><span class="nc">ViewDataBinding</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ObservableReference</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">mObservable</span><span class="o">;</span>
+    <span class="kd">protected</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">mLocalFieldId</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="no">T</span> <span class="n">mTarget</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">WeakListener</span><span class="o">(</span><span class="nc">ViewDataBinding</span> <span class="n">binder</span><span class="o">,</span> <span class="kt">int</span> <span class="n">localFieldId</span><span class="o">,</span>
+            <span class="nc">ObservableReference</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">observable</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">binder</span><span class="o">,</span> <span class="n">sReferenceQueue</span><span class="o">);</span>
+        <span class="n">mLocalFieldId</span> <span class="o">=</span> <span class="n">localFieldId</span><span class="o">;</span>
+        <span class="n">mObservable</span> <span class="o">=</span> <span class="n">observable</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setLifecycleOwner</span><span class="o">(</span><span class="nc">LifecycleOwner</span> <span class="n">lifecycleOwner</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mObservable</span><span class="o">.</span><span class="na">setLifecycleOwner</span><span class="o">(</span><span class="n">lifecycleOwner</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setTarget</span><span class="o">(</span><span class="no">T</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">unregister</span><span class="o">();</span>
+        <span class="n">mTarget</span> <span class="o">=</span> <span class="n">object</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mTarget</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mObservable</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="n">mTarget</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="c1">//...     </span>
+<span class="o">}</span>        
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>registerTo最后调用了setTarget()方法，mObservable.addListener(mTarget)，mObervable就是传过来的WeakPropertyListener，mTarget是我们传过来的User对象</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre><span class="c1">//WeakPropertyListener.java</span>
+<span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">addListener</span><span class="o">(</span><span class="nc">Observable</span> <span class="n">target</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">target</span><span class="o">.</span><span class="na">addOnPropertyChangedCallback</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>再到BaseObservable中</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre><span class="c1">//BaseObservable.java</span>
+<span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">addOnPropertyChangedCallback</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="nc">OnPropertyChangedCallback</span> <span class="n">callback</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCallbacks</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mCallbacks</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">PropertyChangeRegistry</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">mCallbacks</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">callback</span><span class="o">);</span>
+<span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>这样就把WeakPropertyListener监听器注册到mCallbacks(PropertyChangeRegistry)中</p>
+
+<h1 id="时序图">时序图</h1>
+
+<p><img src="https://app.yinxiang.com/FileSharing.action?hash=1/ae3aea370e5fe5505827d9ece0f2b148-375349" alt="ae3aea370e5fe5505827d9ece0f2b148.png" /></p>
+
+<p>requestRebind()最终会重新刷新界面</p>
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2021/01/24/Jetpack_01_lifecycle_livedata/" data-toggle="tooltip" data-placement="top" title="Jetpack组件_01_Lifecycle_LiveData">
+                        Previous<br>
+                        <span>Jetpack组件_01_Lifecycle_LiveData</span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+        
+                <a data-sort="0002" 
+                    href="/archive/?tag=%E6%8F%92%E4%BB%B6%E5%8C%96"
+                    title="插件化"
+                    rel="2">插件化</a>
+        
+                <a data-sort="0002" 
+                    href="/archive/?tag=Jetpack"
+                    title="Jetpack"
+                    rel="2">Jetpack</a>
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="http://mida.re/">乱序（Midare）</a></li>
+  
+  <li><a href="https://sherrywoo.me/">Sherry Woo</a></li>
+  
+  <li><a href="http://kunq.me">Kun Qian</a></li>
+  
+  <li><a href="http://ebnbin.com/">Ebn Zhang</a></li>
+  
+  <li><a href="http://blog.smdcn.net">SmdCn</a></li>
+  
+  <li><a href="http://tiye.me/">JiyinYiyong</a></li>
+  
+  <li><a href="http://dhong.co">DHong Say</a></li>
+  
+  <li><a href="http://ingf.github.io/">尹峰以为</a></li>
+  
+</ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "haiyang_zhao";
+    var disqus_identifier = "/2021/01/24/Jetpack_02_databinding";
+    var disqus_url = "http://forevercoder.com//2021/01/24/Jetpack_02_databinding/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'right',
+          // icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  <li>
+    <a href="https://twitter.com/Ocean Zhao">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  <li>
+    <a target="_blank" href="https://www.zhihu.com/people/Ocean Zhao">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa  fa-stack-1x fa-inverse">知</i>
+      </span>
+    </a>
+  </li>
+  
+  
+  <li>
+    <a target="_blank" href="http://weibo.com/Ocean Zhao">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/Ocean Zhao">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; 赵海洋的技术博客 2021
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="100px"
+                        height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Simple Jekyll Search -->
+<script src="/js/simple-jekyll-search.min.js"></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+        var d = document, t = 'script',
+            o = d.createElement(t),
+            s = d.getElementsByTagName(t)[0];
+        o.src = u;
+        if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+        s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function () {
+        var $nav = document.querySelector("nav");
+        if ($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-49627206-1';
+    var _gaDomain = 'huangxuan.me';
+
+    // Originial
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        // interop with multilangual 
+        if ('' == 'true') {
+            _containerSelector = 'div.post-container.active'
+        } else {
+            _containerSelector = 'div.post-container'
+        }
+
+        // init
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        // clean
+        $(selector).html('')
+
+        // appending
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+<!-- Multi-Lingual -->
+
+
+<!-- Simple Jekyll Search -->
+<script>
+    // https://stackoverflow.com/questions/1912501/unescape-html-entities-in-javascript
+    function htmlDecode(input) {
+        var e = document.createElement('textarea');
+        e.innerHTML = input;
+        // handle case of empty input
+        return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+    }
+
+    SimpleJekyllSearch({
+        searchInput: document.getElementById('search-input'),
+        resultsContainer: document.getElementById('search-results'),
+        json: '/search.json',
+        searchResultTemplate: '<div class="post-preview item"><a href="{url}"><h2 class="post-title">{title}</h2><h3 class="post-subtitle">{subtitle}</h3><hr></a></div>',
+        noResultsText: 'No results',
+        limit: 50,
+        fuzzy: false,
+        // a hack to get escaped subtitle unescaped. for some reason, 
+        // post.subtitle w/o escape filter nuke entire search.
+        templateMiddleware: function (prop, value, template) {
+            if (prop === 'subtitle' || prop === 'title') {
+                if (value.indexOf("code")) {
+                    return htmlDecode(value);
+                } else {
+                    return value;
+                }
+            }
+        }
+    });
+
+    $(document).ready(function () {
+        var $searchPage = $('.search-page');
+        var $searchOpen = $('.search-icon');
+        var $searchClose = $('.search-icon-close');
+        var $searchInput = $('#search-input');
+        var $body = $('body');
+
+        $searchOpen.on('click', function (e) {
+            e.preventDefault();
+            $searchPage.toggleClass('search-active');
+            var prevClasses = $body.attr('class') || '';
+            setTimeout(function () {
+                $body.addClass('no-scroll');
+            }, 400)
+
+            if ($searchPage.hasClass('search-active')) {
+                $searchClose.on('click', function (e) {
+                    e.preventDefault();
+                    $searchPage.removeClass('search-active');
+                    $body.attr('class', prevClasses);  // from closure 
+                });
+                $searchInput.focus();
+            }
+        });
+    });
+</script>
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

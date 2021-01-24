@@ -1,6 +1,14 @@
 [
   
     {
+      "title"    : "Jetpack组件_02_Databinding",
+      "subtitle" : "Jetpack组件_02_Databinding",
+      "tags"     : "Jetpack",
+      "url"      : "/2021/01/24/Jetpack_02_databinding/",
+      "date"     : "2021-01-24 00:00:00 +0800"
+    } ,
+  
+    {
       "title"    : "Jetpack组件_01_Lifecycle_LiveData",
       "subtitle" : "Jetpack_01_Lifecycle_LiveData",
       "tags"     : "Jetpack",
